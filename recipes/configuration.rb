@@ -12,6 +12,16 @@ directory "/etc/postgresql/#{pg_version}/main/" do
   recursive true
 end
 
+# conf.d
+template "/etc/conf.d/postgresql-#{pg_version}" do
+  source "etc-postgresql.conf.erb"
+  owner  "postgres"
+  group  "postgres"
+  mode   "0644"
+  notifies :restart, "service[postgresql]"
+  only_if { %w(gentoo).include? node["platform_family"] }
+end
+
 # environment
 template "/etc/postgresql/#{pg_version}/main/environment" do
   source "environment.erb"
@@ -19,15 +29,17 @@ template "/etc/postgresql/#{pg_version}/main/environment" do
   group  "postgres"
   mode   "0644"
   notifies :restart, "service[postgresql]"
+  only_if { %w(debian ubuntu).include? node["platform_family"] }
 end
 
 # pg_ctl
-template "/etc/postgresql/#{pg_version}/main/pg_ctl.conf" do
+template node["postgresql"]["pgctl_file"] do
   source "pg_ctl.conf.erb"
   owner  "postgres"
   group  "postgres"
   mode   "0644"
   notifies :restart, "service[postgresql]"
+  not_if { node["postgresql"]["pg_ctl_options"] == "" }
 end
 
 # pg_hba
@@ -50,7 +62,7 @@ end
 
 # postgresql
 pg_template_source = node["postgresql"]["conf"].any? ? "custom" : "standard"
-template "/etc/postgresql/#{pg_version}/main/postgresql.conf" do
+template node["postgresql"]["conf_file"] do
   source "postgresql.conf.#{pg_template_source}.erb"
   owner  "postgres"
   group  "postgres"

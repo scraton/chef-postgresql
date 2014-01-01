@@ -14,10 +14,17 @@ directory node["postgresql"]["data_directory"] do
 end
 
 # initialize the data directory if necessary
+initdb_cmd = case node["platform_family"]
+             when "ubuntu", "debian"
+               "/usr/lib/postgresql/#{node["postgresql"]["version"]}/bin/initdb"
+             when "gentoo"
+               "/usr/lib/postgresql-#{node["postgresql"]["version"]}/bin/initdb"
+             end
+
 bash "postgresql initdb" do
   user "postgres"
   code <<-EOC
-  /usr/lib/postgresql/#{node["postgresql"]["version"]}/bin/initdb \
+  #{initdb_cmd} \
     #{node["postgresql"]["initdb_options"]} \
     -U postgres \
     -D #{node["postgresql"]["data_directory"]}

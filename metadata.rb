@@ -23,8 +23,9 @@ recipe "postgresql::server",           "Object-relational SQL database, version 
 recipe "postgresql::server_dev",       "Development files for PostgreSQL server-side programming"
 recipe "postgresql::service",          "Internal recipe to declare the system service"
 
-%w[ubuntu debian].each do |os|
+%w[ubuntu debian gentoo].each do |os|
   supports os
 end
 
 depends "apt", ">= 1.9.0"
+depends "emerge"

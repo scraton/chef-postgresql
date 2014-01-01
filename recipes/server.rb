@@ -13,7 +13,21 @@ file "/usr/sbin/policy-rc.d" do
 end
 
 # install the package
-package "postgresql-#{node["postgresql"]["version"]}"
+case node["platform_family"]
+when "ubuntu", "debian"
+  package "postgresql-#{node["postgresql"]["version"]}"
+when "gentoo"
+  # don't use package here since apparently installing older versions of postgresql
+  # will result in recompiling on _every_ run...annoying
+  execute "install postgresql" do
+    command "emerge -guv =dev-db/postgresql-server-#{node["postgresql"]["long_version"]}"
+    action :run
+  end
+
+  eselect node["postgresql"]["version"] do
+    slot "postgresql"
+  end
+end
 
 # setup the data directory
 include_recipe "postgresql::data_directory"

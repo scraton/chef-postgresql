@@ -8,6 +8,7 @@
 #
 
 default["postgresql"]["version"]                         = "9.3"
+default["postgresql"]["long_version"]                    = "9.3.1"
 default["postgresql"]["apt_distribution"]                = node["lsb"]["codename"]
 
 default["postgresql"]["environment_variables"]           = {}
@@ -30,8 +31,10 @@ default["postgis"]["version"]                            = "1.5"
 # FILE LOCATIONS
 #------------------------------------------------------------------------------
 default["postgresql"]["data_directory"]                  = "/var/lib/postgresql/#{node["postgresql"]["version"]}/main"
+default["postgresql"]["conf_file"]                       = "/etc/postgresql/#{node["postgresql"]["version"]}/main/postgresql.conf"
 default["postgresql"]["hba_file"]                        = "/etc/postgresql/#{node["postgresql"]["version"]}/main/pg_hba.conf"
 default["postgresql"]["ident_file"]                      = "/etc/postgresql/#{node["postgresql"]["version"]}/main/pg_ident.conf"
+default["postgresql"]["pgctl_file"]                      = "/etc/postgresql/#{node["postgresql"]["version"]}/main/pg_ctl.conf"
 default["postgresql"]["external_pid_file"]               = "/var/run/postgresql/#{node["postgresql"]["version"]}-main.pid"
 
 
@@ -60,12 +63,16 @@ default["postgresql"]["authentication_timeout"]          = "1min"
 default["postgresql"]["ssl"]                             = true
 default["postgresql"]["ssl_ciphers"]                     = "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 default["postgresql"]["ssl_renegotiation_limit"]         = "512MB"
-default["postgresql"]["ssl_ca_file"]                     = ""
-default["postgresql"]["ssl_cert_file"]                   = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-default["postgresql"]["ssl_crl_file"]                    = ""
-default["postgresql"]["ssl_key_file"]                    = "/etc/ssl/private/ssl-cert-snakeoil.key"
 default["postgresql"]["password_encryption"]             = "on"
 default["postgresql"]["db_user_namespace"]               = "off"
+
+if node["platform_family"] == "gentoo"
+  default["postgresql"]["ssl_cert_file"]                   = nil
+  default["postgresql"]["ssl_key_file"]                    = nil
+else
+  default["postgresql"]["ssl_cert_file"]                   = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+  default["postgresql"]["ssl_key_file"]                    = "/etc/ssl/private/ssl-cert-snakeoil.key"
+end
 
 # kerberos and gssapi
 default["postgresql"]["db_user_namespace"]               = "off"
@@ -362,6 +369,21 @@ default["postgresql"]["restart_after_crash"]             = "on"
 
 default["postgresql"]["users"]                           = []
 default["postgresql"]["databases"]                       = []
+
+
+#------------------------------------------------------------------------------
+# GENTOO CONF.D OPTIONS
+#------------------------------------------------------------------------------
+
+default["postgresql"]["wait_for_start"] = "-w"
+default["postgresql"]["wait_for_stop"]  = "-w"
+default["postgresql"]["start_timeout"]  = "7200"
+default["postgresql"]["nice_quit"]      = "YES"
+default["postgresql"]["nice_timeout"]   = "60"
+default["postgresql"]["rude_quit"]      = "YES"
+default["postgresql"]["rude_timeout"]   = "30"
+default["postgresql"]["force_quit"]     = "NO"
+default["postgresql"]["force_timeout"]  = "2"
 
 
 #------------------------------------------------------------------------------
