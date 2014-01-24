@@ -5,6 +5,12 @@
 
 
 pg_version = node["postgresql"]["version"]
+pg_conf_mode = case node["platform_family"]
+               when "gentoo"
+                "0600"
+              else
+                "0640"
+              end
 
 directory "/etc/postgresql/#{pg_version}/main/" do
   owner  "postgres"
@@ -37,7 +43,7 @@ template node["postgresql"]["pgctl_file"] do
   source "pg_ctl.conf.erb"
   owner  "postgres"
   group  "postgres"
-  mode   "0644"
+  mode   pg_conf_mode
   notifies :restart, "service[postgresql]"
   not_if { node["postgresql"]["pg_ctl_options"] == "" }
 end
@@ -47,7 +53,7 @@ template node["postgresql"]["hba_file"] do
   source "pg_hba.conf.erb"
   owner  "postgres"
   group  "postgres"
-  mode   "0640"
+  mode   pg_conf_mode
   notifies :restart, "service[postgresql]"
 end
 
@@ -56,7 +62,7 @@ template node["postgresql"]["ident_file"] do
   source "pg_ident.conf.erb"
   owner  "postgres"
   group  "postgres"
-  mode   "0640"
+  mode   pg_conf_mode
   notifies :restart, "service[postgresql]"
 end
 
@@ -66,7 +72,7 @@ template node["postgresql"]["conf_file"] do
   source "postgresql.conf.#{pg_template_source}.erb"
   owner  "postgres"
   group  "postgres"
-  mode   "0644"
+  mode   pg_conf_mode
   notifies :restart, "service[postgresql]"
 end
 
